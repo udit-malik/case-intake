@@ -28,7 +28,7 @@ export function ConfirmationButton({
       return;
     }
 
-    // Show confirmation dialog
+    // dialog to confirm
     const confirmed = window.confirm(
       confirmationTitle ? `${confirmationTitle}\n\n${confirmationMessage}` : confirmationMessage
     );

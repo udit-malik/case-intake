@@ -1,4 +1,3 @@
-// Ensure this module only runs on the server
 if (typeof window !== "undefined") {
   throw new Error("storage.adapter.ts is server-only");
 }
@@ -6,7 +5,6 @@ if (typeof window !== "undefined") {
 import { UTApi } from "uploadthing/server";
 import { logger } from "@/lib/logger";
 
-// Types
 export interface FileSizeResult {
   sizeBytes: number;
   success: boolean;
@@ -17,11 +15,10 @@ export interface DeleteFileResult {
   error?: string;
 }
 
-// Constants
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
 
-// Get UploadThing client
+
 function getUTApiClient(): UTApi {
   const token = process.env.UPLOADTHING_TOKEN;
   if (!token) {
@@ -30,17 +27,16 @@ function getUTApiClient(): UTApi {
   return new UTApi({ token });
 }
 
-// Sleep helper for retry delays
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Calculate exponential backoff delay
+// calc exponential backoff delay
 function getRetryDelay(attempt: number): number {
   return BASE_DELAY_MS * Math.pow(2, attempt - 1);
 }
 
-// Get file size by making a HEAD request
+// get file size
 export async function getSizeByHead(url: string): Promise<FileSizeResult> {
   let lastError: Error | null = null;
 
@@ -48,7 +44,7 @@ export async function getSizeByHead(url: string): Promise<FileSizeResult> {
     try {
       logger.info("Getting file size", {
         attempt,
-        url: url.substring(0, 100) + "...", // Log partial URL
+        url: url.substring(0, 100) + "...", // log partial URL
       });
 
       const response = await fetch(url, {
@@ -95,14 +91,14 @@ export async function getSizeByHead(url: string): Promise<FileSizeResult> {
     }
   }
 
-  // If we get here, all retries failed
+  // all retries failed
   return {
     sizeBytes: 0,
     success: false,
   };
 }
 
-// Delete file using UploadThing
+
 export async function deleteFile(fileKey: string): Promise<DeleteFileResult> {
   const client = getUTApiClient();
   let lastError: Error | null = null;
@@ -116,7 +112,6 @@ export async function deleteFile(fileKey: string): Promise<DeleteFileResult> {
 
       const result = await client.deleteFiles(fileKey);
 
-      // Check if deletion was successful
       if (result.success) {
         logger.info("File deleted successfully", {
           fileKey,
@@ -150,14 +145,12 @@ export async function deleteFile(fileKey: string): Promise<DeleteFileResult> {
     }
   }
 
-  // If we get here, all retries failed
   return {
     success: false,
     error: lastError?.message || "Unknown error",
   };
 }
 
-// Helper function to check if file exists (by making a HEAD request)
 export async function fileExists(url: string): Promise<boolean> {
   try {
     const response = await fetch(url, {
@@ -176,7 +169,6 @@ export async function fileExists(url: string): Promise<boolean> {
   }
 }
 
-// Helper function to get file metadata
 export async function getFileMetadata(url: string): Promise<{
   sizeBytes: number;
   contentType?: string;

@@ -13,16 +13,16 @@ import { validateRequest } from "@/lib/auth/lucia";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
-  // Check if user is authenticated
+  // check user auth
   const { user } = await validateRequest();
 
-  // If user is logged in, redirect to dashboard
+  // if logged in, redirect to dash
   if (user) {
     redirect("/dashboard");
   }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Hero Section */}
+      {/* landing */}
       <section className="relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -54,7 +54,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* features */}
       <section className="py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -145,7 +145,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA */}
       <section className="bg-slate-900 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">

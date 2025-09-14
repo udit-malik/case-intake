@@ -15,14 +15,12 @@ export function canonicalizeClarifications(input: string[]): string[] {
         return "";
       }
 
-      // Normalize: lowercase, trim, strip trailing punctuation, collapse spaces
       const normalized = item
         .toLowerCase()
         .trim()
-        .replace(/[,.;!?]+$/, "") // Strip trailing punctuation
-        .replace(/\s+/g, " "); // Collapse multiple spaces to single space
+        .replace(/[,.;!?]+$/, "") // strip trailing punctuation
+        .replace(/\s+/g, " "); // collapse multiple spaces to single space
 
-      // Map common variants to canonical questions using regex patterns
       if (
         /\b(date of birth|dob|date_of_birth)\b/.test(normalized) ||
         normalized === "dob"
@@ -97,12 +95,10 @@ export function canonicalizeClarifications(input: string[]): string[] {
         return "Where did the incident occur?";
       }
 
-      // If no pattern matches, return the normalized string as-is
       return normalized;
     })
-    .filter((item) => item.length > 0); // Remove empty strings
+    .filter((item) => item.length > 0);
 
-  // Return unique items preserving first-seen order
   const seen = new Set<string>();
   const result: string[] = [];
 

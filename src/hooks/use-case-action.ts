@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { displayError } from "@/lib/errors";
-import { caseApi } from "@/lib/utils/api-client";
+import { caseApi } from "@/lib/api-client";
 import { logger } from "@/lib/logger";
 
 

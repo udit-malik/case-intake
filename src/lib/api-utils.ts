@@ -3,11 +3,7 @@ import { z } from "zod";
 import { validateRequest as luciaValidateRequest } from "@/lib/auth/lucia";
 import { handleApiError } from "@/lib/errors";
 
-/**
- * Simple API utilities for prototype - no complex middleware
- */
-
-// Simple request validation
+// request validation
 export async function validateRequest<T>(
   request: NextRequest,
   schema: z.ZodSchema<T>
@@ -25,7 +21,7 @@ export async function validateRequest<T>(
   }
 }
 
-// Simple response helpers
+// response helpers
 export const apiResponse = {
   success: (data?: any, message?: string) => {
     return NextResponse.json({
@@ -76,7 +72,7 @@ export const apiResponse = {
   },
 };
 
-// Simple route wrapper for authenticated routes
+// route wrapper for authenticated routes
 export function withAuth(
   handler: (
     request: NextRequest,
@@ -105,7 +101,7 @@ export function withAuth(
   };
 }
 
-// Simple route wrapper for public routes
+// route wrapper for public routes
 export function publicRoute(
   handler: (request: NextRequest, params: any) => Promise<NextResponse>
 ) {

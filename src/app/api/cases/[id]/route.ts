@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { deleteCase } from "@/lib/services/case.service";
+import { deleteCase } from "@/lib/case.service";
 import { withAuth, validateRequest, apiResponse } from "@/lib/api-utils";
 
 const deleteSchema = z.object({

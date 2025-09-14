@@ -7,12 +7,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
 
-// Constants
-const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB in bytes
+const MAX_FILE_SIZE = 30 * 1024 * 1024;
 const ALLOWED_MIME_TYPE = "audio/mpeg";
 const ALLOWED_EXTENSION = ".mp3";
 
-// Types
 interface UploadState {
   file: File | null;
   isUploading: boolean;
@@ -22,7 +20,6 @@ interface UploadState {
 }
 
 export default function UploadAudioDnd() {
-  // State
   const [state, setState] = useState<UploadState>({
     file: null,
     isUploading: false,
@@ -31,12 +28,10 @@ export default function UploadAudioDnd() {
     isDragOver: false,
   });
 
-  // Refs and hooks
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploader = genUploader<OurFileRouter>();
 
-  // File validation
   const validateFile = useCallback((file: File): string | null => {
     const isValidMime = file.type === ALLOWED_MIME_TYPE;
     const hasMp3Extension = file.name.toLowerCase().endsWith(ALLOWED_EXTENSION);
@@ -53,7 +48,6 @@ export default function UploadAudioDnd() {
     return null;
   }, []);
 
-  // File handling
   const handleFileSelection = useCallback(
     (selectedFile: File) => {
       const validationError = validateFile(selectedFile);
@@ -78,7 +72,7 @@ export default function UploadAudioDnd() {
     [validateFile]
   );
 
-  // Drag and drop handlers
+  // drag and drop handlers
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -110,7 +104,6 @@ export default function UploadAudioDnd() {
     [handleFileSelection]
   );
 
-  // File input handler
   const handleFileInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
@@ -121,11 +114,9 @@ export default function UploadAudioDnd() {
     [handleFileSelection]
   );
 
-  // Error mapping for user-friendly messages
   const mapUploadError = (error: any): string => {
     const message = error?.message || error?.toString() || "";
 
-    // Map server error codes to user-friendly messages
     if (message === "ONLY_MP3_ALLOWED") {
       return "Only MP3 allowed";
     }
@@ -136,11 +127,9 @@ export default function UploadAudioDnd() {
       return "Upload failed—try again";
     }
 
-    // Fallback for other errors
     return "Upload failed—try again";
   };
 
-  // Upload functionality
   const handleUpload = useCallback(async () => {
     if (!state.file) return;
 
@@ -177,12 +166,11 @@ export default function UploadAudioDnd() {
     }
   }, [state.file, uploader, router]);
 
-  // UI handlers
   const handleBoxClick = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
 
-  // Render helpers
+  // render helpers
   const renderDropZone = () => (
     <div
       className={`
@@ -209,13 +197,13 @@ export default function UploadAudioDnd() {
         disabled={state.isUploading}
       />
 
-      {/* Animated background pattern */}
+      {/* animated bg pattern */}
       <div className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 animate-pulse"></div>
       </div>
 
       <div className="relative space-y-6">
-        {/* Animated upload icon */}
+        {/* animated upload icon */}
         <div className="mx-auto w-16 h-16 text-slate-400 group-hover:text-blue-500 transition-colors duration-300">
           <div className="relative">
             <svg
@@ -231,7 +219,7 @@ export default function UploadAudioDnd() {
                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               />
             </svg>
-            {/* Floating particles effect */}
+            {/* floating particles effect */}
             <div className="absolute -top-2 -right-2 w-3 h-3 bg-blue-400 rounded-full animate-bounce opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div
               className="absolute -bottom-1 -left-1 w-2 h-2 bg-indigo-400 rounded-full animate-bounce opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -253,7 +241,7 @@ export default function UploadAudioDnd() {
           </p>
         </div>
 
-        {/* File requirements */}
+        {/* file reqs */}
         <div className="inline-flex items-center space-x-4 px-4 py-2 bg-slate-100 rounded-full text-sm text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors duration-300">
           <div className="flex items-center space-x-1">
             <svg
@@ -290,7 +278,7 @@ export default function UploadAudioDnd() {
           </div>
         </div>
 
-        {/* Animated dots when dragging */}
+        {/* animaeted dots when dragging */}
         {state.isDragOver && (
           <div className="flex justify-center space-x-1">
             <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
@@ -313,7 +301,7 @@ export default function UploadAudioDnd() {
 
     return (
       <div className="relative overflow-hidden bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
-        {/* Animated background pattern */}
+        {/* animated bg pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0 bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 animate-pulse"></div>
         </div>
@@ -321,7 +309,7 @@ export default function UploadAudioDnd() {
         <div className="relative">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              {/* File icon with animation */}
+              {/* file icon */}
               <div className="relative">
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                   <svg
@@ -338,7 +326,7 @@ export default function UploadAudioDnd() {
                     />
                   </svg>
                 </div>
-                {/* Success checkmark overlay */}
+                {/* success checkmark overlay */}
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
                   <svg
                     className="w-2.5 h-2.5 text-white"
@@ -407,13 +395,13 @@ export default function UploadAudioDnd() {
 
     return (
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
-        {/* Animated background pattern */}
+        {/* animated bg pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 animate-pulse"></div>
         </div>
 
         <div className="relative space-y-4">
-          {/* Header with animated icon */}
+          {/* header with animated icon */}
           <div className="flex items-center justify-center space-x-3">
             <div className="relative">
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
@@ -437,7 +425,7 @@ export default function UploadAudioDnd() {
                   ></path>
                 </svg>
               </div>
-              {/* Pulsing ring */}
+              {/* ring */}
               <div className="absolute inset-0 w-8 h-8 border-2 border-blue-300 rounded-full animate-ping"></div>
             </div>
             <div>
@@ -450,7 +438,7 @@ export default function UploadAudioDnd() {
             </div>
           </div>
 
-          {/* Enhanced progress bar */}
+          {/* progress bar */}
           <div className="space-y-3">
             <div className="flex justify-between items-center text-sm">
               <span className="font-medium text-slate-700">
@@ -461,40 +449,40 @@ export default function UploadAudioDnd() {
               </span>
             </div>
 
-            {/* Progress bar container */}
+            {/* progress bar */}
             <div className="relative w-full bg-slate-200 rounded-full h-3 overflow-hidden">
               {/* Animated background */}
               <div className="absolute inset-0 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 animate-pulse"></div>
 
-              {/* Progress fill with gradient */}
+              {/* progress fill w/ gradient */}
               <div
                 className="relative h-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 rounded-full transition-all duration-500 ease-out shadow-lg"
                 style={{ width: `${state.progress}%` }}
               >
-                {/* Shimmer effect */}
+                {/* shimmer effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
               </div>
 
-              {/* Progress indicator dot */}
+              {/* progress indicator dot */}
               <div
                 className="absolute top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white border-2 border-blue-600 rounded-full shadow-lg transition-all duration-500 ease-out"
                 style={{ left: `calc(${state.progress}% - 8px)` }}
               ></div>
             </div>
 
-            {/* Status messages based on progress */}
+            {/* status msg based on progress */}
             <div className="text-center">
               <p className="text-sm text-slate-600">
-                {state.progress < 25 && "Preparing file for upload..."}
+                {state.progress < 25 && "Preparing file for upload"}
                 {state.progress >= 25 &&
                   state.progress < 50 &&
-                  "Uploading audio data..."}
+                  "Uploading audio data"}
                 {state.progress >= 50 &&
                   state.progress < 75 &&
-                  "Processing audio content..."}
+                  "Processing audio content"}
                 {state.progress >= 75 &&
                   state.progress < 100 &&
-                  "Finalizing case creation..."}
+                  "Finalizing case creation"}
                 {state.progress === 100 && "Complete! Redirecting..."}
               </p>
             </div>

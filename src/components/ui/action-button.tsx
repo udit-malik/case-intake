@@ -71,7 +71,6 @@ export function ActionButton({
         </div>
       )}
 
-      {/* Subtle hover effect overlay */}
       {showHoverEffect && (
         <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-200" />
       )}

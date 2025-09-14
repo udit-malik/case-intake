@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { submitDecision } from "@/lib/services/case.service";
+import { submitDecision } from "@/lib/case.service";
 import { revalidateCaseDetails, revalidateDashboard, revalidateCases } from "@/lib/revalidate";
 import { withAuth, apiResponse } from "@/lib/api-utils";
 

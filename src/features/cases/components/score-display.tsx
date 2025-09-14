@@ -47,10 +47,10 @@ export default function ScoreDisplay({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Main Score Display - Horizontal Layout */}
+        {/* score display */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-6">
-            {/* Score */}
+            {/*score*/}
             <div className="text-center">
               <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">
                 Score
@@ -61,7 +61,7 @@ export default function ScoreDisplay({
               <div className="text-sm text-slate-400">/ 100</div>
             </div>
 
-            {/* Decision */}
+            {/* decision */}
             <div className="text-center">
               <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">
                 Decision
@@ -74,14 +74,14 @@ export default function ScoreDisplay({
             </div>
           </div>
 
-          {/* Scoring Info */}
+          {/* info */}
           <div className="text-right text-xs text-slate-500">
             <div>Scored: {new Date(scoredAt).toLocaleDateString()}</div>
             {scoringVersion && <div>{scoringVersion}</div>}
           </div>
         </div>
 
-        {/* Decision Reasons - Horizontal Grid */}
+        {/* reasons grid */}
         {decisionReasons.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -99,12 +99,11 @@ export default function ScoreDisplay({
                 ? decisionReasons
                 : decisionReasons.slice(0, 6)
               ).map((reason, index) => {
-                // Determine if this is a positive or negative reason based on prefix
                 const isPositive = reason.startsWith("+");
                 const isNegative = reason.startsWith("-");
                 const isNeutral = reason.startsWith("~");
 
-                // Remove the prefix from the display text
+                // remove prefix from display text
                 const displayText = reason.replace(/^[+\-~]\s*/, "");
 
                 return (
@@ -147,7 +146,7 @@ export default function ScoreDisplay({
               })}
             </div>
 
-            {/* Show more/less toggle if there are many reasons */}
+            {/* more/less toggle */}
             {decisionReasons.length > 6 && (
               <div className="mt-3 text-center">
                 <button

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import LogoutButton from "@/features/auth/components/logout-button";
 import { isAuthResponse, User } from "@/types";
-import { authApi } from "@/lib/utils/api-client";
+import { authApi } from "@/lib/api-client";
 import { logger } from "@/lib/logger";
 
 export default function ClientSiteHeader() {
@@ -13,14 +13,14 @@ export default function ClientSiteHeader() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check authentication status on mount and when the component updates
+    // check auth status on mount + when the component updates
     const checkAuth = async () => {
       try {
         const response = await authApi.getCurrentUser();
 
-        // Runtime type validation
+        // runtime type validation
         if (isAuthResponse(response) && response.data?.user) {
-          // Convert to full User type with defaults
+          // conv to full User type with defaults
           setUser({
             ...response.data.user,
             autoTranscribe: false,
@@ -42,14 +42,14 @@ export default function ClientSiteHeader() {
 
     checkAuth();
 
-    // Listen for storage events to update auth state across tabs
+    // listen for storage events to update auth state across tabs
     const handleStorageChange = () => {
       checkAuth();
     };
 
     window.addEventListener("storage", handleStorageChange);
 
-    // Also listen for custom auth events
+    // listen for custom auth events
     window.addEventListener("auth-changed", handleStorageChange);
 
     return () => {

@@ -6,10 +6,7 @@ import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { AuthFormConfig, AuthFormReturn } from "@/types";
 
-/**
- * Reusable hook for authentication forms (login/signup)
- * Handles common patterns like loading states, error handling, and navigation
- */
+// reusable auth form hook. handles load states, errs, and nav
 export function useAuthForm<T extends FieldValues>(
   config: AuthFormConfig<T>
 ): AuthFormReturn<T> {
@@ -43,7 +40,7 @@ export function useAuthForm<T extends FieldValues>(
 
       if (response.ok) {
         toast.success(config.successMessage);
-        // Dispatch custom event to update header
+        // dispatch custom event to update header
         window.dispatchEvent(new CustomEvent("auth-changed"));
         router.push(config.redirectPath);
       } else {

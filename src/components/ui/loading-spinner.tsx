@@ -1,4 +1,5 @@
-import { cn } from "@/lib/utils/utils";
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
@@ -17,6 +18,8 @@ export function LoadingSpinner({
 
   return (
     <div
+      role="status"
+      aria-label="Loading"
       className={cn(
         "border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin",
         sizeClasses[size],

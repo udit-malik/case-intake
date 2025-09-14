@@ -64,69 +64,67 @@ export const BASE = {
   AIRBAG_DEPLOYED: 3,
   SEVERE_DAMAGE_BONUS: 3,
 
-  // Keep scores between 1 and 100
   MIN_SCORE: 1,
   MAX_SCORE: 100,
 };
 
-// Scoring profiles by case type
+
 export const PROFILES: Record<CaseType, Partial<typeof BASE>> = {
-  // MVA cases: keep rear-ended & police report high; property damage penalty active
+  // MVA (motor vehicle accident) cases
+  // keep rear-ended & police report high; property damage penalty active
   [CaseType.MVA_REAR_END]: {
-    REAR_ENDED: 35, // Boost rear-ended for this specific case type
-    POLICE_REPORT: 8, // Higher police report weight
-    MINOR_DAMAGE: -4, // Keep property damage penalty
+    REAR_ENDED: 35, 
+    POLICE_REPORT: 8,
+    MINOR_DAMAGE: -4, 
   },
   [CaseType.MVA_LEFT_TURN]: {
-    POLICE_REPORT: 8, // Higher police report weight
-    MINOR_DAMAGE: -4, // Keep property damage penalty
+    POLICE_REPORT: 8,
+    MINOR_DAMAGE: -4, 
   },
   [CaseType.MVA_T_BONE]: {
-    POLICE_REPORT: 8, // Higher police report weight
-    MINOR_DAMAGE: -4, // Keep property damage penalty
+    POLICE_REPORT: 8, 
+    MINOR_DAMAGE: -4,
   },
   [CaseType.MVA_SIDESWIPE]: {
-    POLICE_REPORT: 8, // Higher police report weight
-    MINOR_DAMAGE: -4, // Keep property damage penalty
+    POLICE_REPORT: 8, 
+    MINOR_DAMAGE: -4, 
   },
 
-  // Premises cases: boost slip-fall factors; set property damage penalty to 0
+  // no property damage in slip/fall cases
   [CaseType.PREMISES_WET_FLOOR]: {
-    SLIPFALL_NO_SIGN: 30, // Boost no warning signs
-    DEFENDANT_LOCATION: 6, // Boost defendant/location identification
-    MINOR_DAMAGE: 0, // No property damage penalty
+    SLIPFALL_NO_SIGN: 30,
+    DEFENDANT_LOCATION: 6, 
+    MINOR_DAMAGE: 0, 
   },
   [CaseType.PREMISES_ICE_SNOW]: {
-    SLIPFALL_NO_SIGN: 30, // Boost no warning signs
-    DEFENDANT_LOCATION: 6, // Boost defendant/location identification
-    MINOR_DAMAGE: 0, // No property damage penalty
+    SLIPFALL_NO_SIGN: 30,
+    DEFENDANT_LOCATION: 6, 
+    MINOR_DAMAGE: 0, 
   },
   [CaseType.PREMISES_TRIP_HAZARD]: {
-    SLIPFALL_NO_SIGN: 30, // Boost no warning signs
-    DEFENDANT_LOCATION: 6, // Boost defendant/location identification
-    MINOR_DAMAGE: 0, // No property damage penalty
+    SLIPFALL_NO_SIGN: 30, 
+    DEFENDANT_LOCATION: 6, 
+    MINOR_DAMAGE: 0, 
   },
 
-  // Dog bite: set property damage penalty to 0; modest + for witness_present
+
   [CaseType.DOG_BITE]: {
-    MINOR_DAMAGE: 0, // No property damage penalty
-    WITNESS_PRESENT: 4, // Modest boost for witness presence
+    MINOR_DAMAGE: 0,
+    WITNESS_PRESENT: 4, 
   },
 
-  // Pedestrian or bicycle: boost police report, remove minor damage penalty, add base pedestrian bonus
   [CaseType.PEDESTRIAN_OR_BICYCLE]: {
-    POLICE_REPORT: 8, // Higher police report weight
-    MINOR_DAMAGE: 0, // No property damage penalty
-    PEDESTRIAN_OR_BICYCLIST: 6, // Base pedestrian/bicycle bonus
+    POLICE_REPORT: 8, 
+    MINOR_DAMAGE: 0, 
+    PEDESTRIAN_OR_BICYCLIST: 6, 
   },
 
-  // Rideshare MVA: boost police report, keep minor damage penalty, add rideshare bonus
+  
   [CaseType.RIDESHARE_MVA]: {
-    POLICE_REPORT: 8, // Higher police report weight
-    MINOR_DAMAGE: -4, // Keep property damage penalty
-    RIDESHARE: 5, // Rideshare bonus
+    POLICE_REPORT: 8, 
+    MINOR_DAMAGE: -4, 
+    RIDESHARE: 5,
   },
 
-  // Other: no overrides
   [CaseType.OTHER]: {},
 };

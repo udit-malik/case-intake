@@ -8,7 +8,7 @@ import { FormField, FormTextareaField } from "@/components/ui/form-field";
 import { FormSection } from "@/components/ui/form-section";
 import { useSimpleForm } from "@/hooks/use-simple-form";
 import { displayError } from "@/lib/errors";
-import { caseApi } from "@/lib/utils/api-client";
+import { caseApi } from "@/lib/api-client";
 import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 

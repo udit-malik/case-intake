@@ -1,20 +1,9 @@
-/**
- * Shared TypeScript types and interfaces
- * Centralized type definitions for better maintainability
- */
-
 import { FieldValues, FieldErrors } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-// Re-export all types from schemas
 export * from "@/schemas/intake";
 
-// ============================================================================
-// CORE DOMAIN TYPES
-// ============================================================================
-
-// User types
 export interface User {
   id: string;
   email: string;
@@ -24,7 +13,6 @@ export interface User {
   updatedAt: Date;
 }
 
-// Case types
 export interface Case {
   id: string;
   userId: string;
@@ -38,7 +26,6 @@ export interface Case {
   updatedAt: Date;
 }
 
-// Detailed case record for service operations
 export interface CaseRecord {
   id: string;
   userId: string;
@@ -72,7 +59,6 @@ export interface CaseRecord {
   deletedReason?: string | null;
 }
 
-// Enums
 export enum CaseStatus {
   UPLOADED = "UPLOADED",
   TRANSCRIBED = "TRANSCRIBED",
@@ -87,11 +73,8 @@ export enum Decision {
   DECLINE = "DECLINE",
 }
 
-// ============================================================================
-// API RESPONSE TYPES
-// ============================================================================
 
-// Common API response types
+// API resp types
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
@@ -108,7 +91,6 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
   };
 }
 
-// Specific API response types for better type safety
 export interface AuthResponse {
   user: {
     id: string;
@@ -170,7 +152,7 @@ export interface UserPreferencesResponse {
   autoExtract: boolean;
 }
 
-// Type guards for runtime validation
+// typeguards for runtime validation
 export function isApiResponse<T>(obj: any): obj is ApiResponse<T> {
   return (
     typeof obj === "object" &&
@@ -214,11 +196,7 @@ export function isCaseResponse(obj: any): obj is CaseResponse {
   );
 }
 
-// ============================================================================
-// SERVICE & CONFIGURATION TYPES
-// ============================================================================
 
-// Service operation types
 export interface CreateCaseOptions {
   userId: string;
   file: {
@@ -236,7 +214,6 @@ export interface PaginationOptions {
   orderBy?: any;
 }
 
-// Adapter configuration types
 export interface TranscribeOptions {
   model?: string;
   language?: string;
@@ -274,11 +251,7 @@ export interface SendDecisionEmailOptions {
   reasons: string[];
 }
 
-// ============================================================================
-// FORM & UI TYPES
-// ============================================================================
-
-// Form types
+// form types
 export interface FormState {
   isDirty: boolean;
   isSubmitting: boolean;
@@ -336,7 +309,7 @@ export interface CaseActionButtonProps {
   showDescription?: boolean;
 }
 
-// Reusable button component types
+// reusable button component types
 export interface ActionButtonProps {
   onClick: () => void;
   isLoading?: boolean;
@@ -371,10 +344,7 @@ export interface ErrorDisplayProps {
   className?: string;
 }
 
-// ============================================================================
-// API ROUTE TYPES
-// ============================================================================
-
+// API route types
 export interface RouteHandler {
   GET?: (request: Request, context: any) => Promise<Response>;
   POST?: (request: Request, context: any) => Promise<Response>;

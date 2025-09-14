@@ -1,7 +1,3 @@
-/**
- * Type-safe API client for consistent API communication
- */
-
 import { handleApiResponse } from "@/lib/errors";
 import type {
   ApiResponse,

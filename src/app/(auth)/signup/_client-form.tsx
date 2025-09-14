@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { useAuthForm } from "@/hooks/use-auth-form";
-import { AuthForm } from "@/components/auth/auth-form";
+import { AuthForm } from "@/features/auth/components/auth-form";
 
 const signupSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),

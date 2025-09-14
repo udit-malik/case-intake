@@ -354,7 +354,6 @@ export async function submitDecision(
   caseId: string,
   userId: string
 ): Promise<CaseRecord> {
-  // Load case
   const caseRecord = await CaseQueries.findByIdForService(caseId, userId);
 
   if (!caseRecord) {

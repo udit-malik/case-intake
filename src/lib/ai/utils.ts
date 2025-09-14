@@ -46,29 +46,25 @@ export function stripCodeFences(s: string): string {
   return s.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/i, "");
 }
 
-/**
- * Helper to compute days to previous target weekday
- */
+
 export function daysToPreviousWeekday(currentDay: number, targetDay: number): number {
   return (currentDay + 7 - targetDay) % 7;
 }
 
-/**
- * Safe getAnchorDate helper to resolve relative dates
- */
+// resolve relative dates
 export function getAnchorDate(incidentDate: string | null, now: Date): string {
   if (!incidentDate) {
     return now.toISOString();
   }
   
   try {
-    // If it's already a valid ISO date, return it
+    // if valid ISO date, return
     const parsed = new Date(incidentDate);
     if (!isNaN(parsed.getTime())) {
       return parsed.toISOString();
     }
     
-    // If it's a relative date string, try to resolve it
+    // if relative date string, resolve
     const lowerDate = incidentDate.toLowerCase();
     const today = new Date(now);
     
@@ -95,9 +91,8 @@ export function getAnchorDate(incidentDate: string | null, now: Date): string {
   }
 }
 
-/**
- * Helper function to calculate days since incident
- */
+
+// days since incident
 export function daysSince(
   incidentDate: string | null | undefined,
   now?: Date
@@ -108,11 +103,11 @@ export function daysSince(
     const incident = new Date(incidentDate);
     const currentTime = now || new Date();
     
-    // Strip time to UTC midnight for both dates
+    // strip time to UTC midnight
     const incidentUTC = new Date(incident.getUTCFullYear(), incident.getUTCMonth(), incident.getUTCDate());
     const currentUTC = new Date(currentTime.getUTCFullYear(), currentTime.getUTCMonth(), currentTime.getUTCDate());
     
-    // Calculate difference in days
+    // get difference in days
     const diffTime = currentUTC.getTime() - incidentUTC.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
@@ -121,9 +116,7 @@ export function daysSince(
   }
 }
 
-/**
- * Helper function to check for regex patterns in text
- */
+// regex pattern matcher
 export function matchesPattern(
   text: string | null | undefined,
   pattern: RegExp
@@ -132,9 +125,7 @@ export function matchesPattern(
   return pattern.test(text);
 }
 
-/**
- * Helper function to convert spelled numbers to integers
- */
+
 export function spelledNumberToInt(str: string): number | null {
   const wordToNumber: { [key: string]: number } = {
     one: 1,
@@ -155,12 +146,12 @@ export function spelledNumberToInt(str: string): number | null {
 export function normalizeIncidentDate(incidentDate: string | null | undefined, now: Date = new Date()): string | null {
   if (!incidentDate) return null;
 
-  // If already ISO or contains a year, just pass through.
+  // if already ISO or contains a year, pass through
   if (/\b\d{4}\b/.test(incidentDate) || /^\d{4}-\d{2}-\d{2}/.test(incidentDate)) {
     return incidentDate;
   }
 
-  // Match formats like "April 18" or "Apr 18"
+  // match formats like "april 18" or "apr 18"
   const m = incidentDate.match(/^\s*([A-Za-z]+)\s+(\d{1,2})\s*$/);
   if (!m) return incidentDate;
 
@@ -168,7 +159,7 @@ export function normalizeIncidentDate(incidentDate: string | null | undefined, n
   const day = parseInt(m[2], 10);
   const currentYear = now.getFullYear();
 
-  // assume current year; if that would put it >30 days in the future, roll back a year
+  // assume current year; if that makes it >30 days in the future, roll back a year
   let candidate = new Date(`${month} ${day}, ${currentYear}`);
   if (candidate.getTime() - now.getTime() > 30 * 24 * 60 * 60 * 1000) {
     candidate = new Date(`${month} ${day}, ${currentYear - 1}`);

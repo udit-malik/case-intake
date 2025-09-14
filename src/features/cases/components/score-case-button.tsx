@@ -1,7 +1,7 @@
 "use client";
 
 import { useCaseActions } from "@/hooks/use-case-action";
-import { CaseActionButton } from "@/components/cases/case-action-button";
+import { CaseActionButton } from "./case-action-button";
 
 interface ScoreCaseButtonProps {
   caseId: string;

@@ -1,15 +1,6 @@
-/**
- * Simplified Error Handling System
- * Basic error classes and utilities for prototype
- */
-
 import { NextResponse } from "next/server";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
-
-// ============================================================================
-// BASIC ERROR CLASSES
-// ============================================================================
 
 export class ApiError extends Error {
   public readonly statusCode: number;
@@ -28,7 +19,6 @@ export class ValidationError extends ApiError {
   }
 }
 
-// Case-specific errors
 export class CaseNotFoundError extends ApiError {
   constructor(caseId: string) {
     super(`Case not found: ${caseId}`, 404);
@@ -63,18 +53,13 @@ export class MissingRequiredFieldsError extends ApiError {
   public readonly details?: any;
 
   constructor(missingFields: string[]) {
-    super("Missing required fields", 422);
+    super(`Missing required fields: ${missingFields.join(', ')}`, 422);
     this.details = { missing: missingFields };
   }
 }
 
-// ============================================================================
-// SIMPLE ERROR UTILITIES
-// ============================================================================
 
-/**
- * Display error to user with toast notification
- */
+// display err with toast notif
 export function displayError(
   error: unknown,
   options?: {
@@ -101,9 +86,7 @@ export function displayError(
   }
 }
 
-/**
- * Handle API response errors
- */
+
 export async function handleApiResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     let errorMessage = `HTTP ${response.status}`;
@@ -125,19 +108,11 @@ export async function handleApiResponse<T>(response: Response): Promise<T> {
   return response.json();
 }
 
-// ============================================================================
-// SERVER-SIDE ERROR HANDLING
-// ============================================================================
-
-/**
- * Simple error handler for API routes
- */
+// API route err handling
 export function handleApiError(error: unknown): NextResponse {
-  // Log error for debugging
   const errorMessage = error instanceof Error ? error.message : "Unknown error";
   logger.error("API error", { error: errorMessage });
 
-  // Handle known API errors
   if (error instanceof ApiError) {
     return NextResponse.json(
       { error: error.message },
@@ -145,7 +120,6 @@ export function handleApiError(error: unknown): NextResponse {
     );
   }
 
-  // Handle specific error types
   if (error instanceof CaseNotFoundError) {
     return NextResponse.json({ error: "Case not found" }, { status: 404 });
   }
@@ -164,6 +138,5 @@ export function handleApiError(error: unknown): NextResponse {
     );
   }
 
-  // Generic error response
   return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 }

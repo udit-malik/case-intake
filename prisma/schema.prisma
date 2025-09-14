@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  hashedPassword String
+  autoTranscribe Boolean   @default(false)
+  autoExtract    Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  sessions       Session[]
+  cases          Case[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+enum CaseStatus {
+  UPLOADED
+  TRANSCRIBED
+  EXTRACTED
+  SCORED
+  DECIDED
+}
+
+enum Decision {
+  ACCEPT
+  REVIEW
+  DECLINE
+}
+
+model Case {
+  id              String     @id @default(cuid())
+  userId          String
+  status          CaseStatus @default(UPLOADED)
+  fileKey         String
+  fileUrl         String
+  originalFilename String
+  mimeType        String
+  audioSha256     String?
+  durationSec     Int?
+  transcriptText  String?
+  transcriptJson  Json?
+  transcribedAt   DateTime?
+  deepgramModel   String?
+  deepgramRequestId String?
+  extractedAt     DateTime?
+  extractionModel String?
+  extractionRequestId String?
+  extractionJson  Json?
+  intakeDraft     Json?
+  clarificationNeeded String[]
+  deletedAt       DateTime?
+  deletedReason   String?
+  score           Int?
+  decision        Decision?
+  decisionReasons String[] @default([])
+  scoredAt        DateTime?
+  scoringVersion  String?
+  scoringTrace    Json?
+  submittedAt     DateTime?
+  decisionEmailId String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("case")
+}

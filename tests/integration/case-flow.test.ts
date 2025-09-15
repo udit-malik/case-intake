@@ -188,13 +188,13 @@ describe.skip('Case Flow Integration Tests', () => {
       const { prisma } = await import('../../src/lib/database/db');
       
       // Mock case creation
-      vi.mocked(prisma.case.create).mockResolvedValue(mockCase);
-      vi.mocked(prisma.case.findUnique).mockResolvedValue(mockCase);
+      vi.mocked(prisma.case.create).mockResolvedValue(mockCase as any);
+      vi.mocked(prisma.case.findUnique).mockResolvedValue(mockCase as any);
       vi.mocked(prisma.case.update).mockResolvedValue({
         ...mockCase,
         status: 'TRANSCRIBED',
         transcript: 'This is a test transcript',
-      });
+      } as any);
 
       // Note: Case creation is handled by file upload service, not API
       // We'll start with a case that's already been uploaded
@@ -243,7 +243,7 @@ describe.skip('Case Flow Integration Tests', () => {
       const { transcribe } = await import('../../src/lib/adapters/deepgram.adapter');
       
       // Mock case exists
-      vi.mocked(prisma.case.findUnique).mockResolvedValue(mockCase);
+      vi.mocked(prisma.case.findUnique).mockResolvedValue(mockCase as any);
       
       // Mock transcription failure
       vi.mocked(transcribe).mockRejectedValue(new Error('Transcription failed'));
@@ -267,7 +267,7 @@ describe.skip('Case Flow Integration Tests', () => {
         transcript: 'This is a test transcript',
       };
       
-      vi.mocked(prisma.case.findUnique).mockResolvedValue(caseWithTranscript);
+      vi.mocked(prisma.case.findUnique).mockResolvedValue(caseWithTranscript as any);
       
       // Mock extraction failure
       vi.mocked(extract).mockRejectedValue(new Error('Extraction failed'));
@@ -309,7 +309,7 @@ describe.skip('Case Flow Integration Tests', () => {
         },
       };
       
-      vi.mocked(prisma.case.findUnique).mockResolvedValue(caseWithIntake);
+      vi.mocked(prisma.case.findUnique).mockResolvedValue(caseWithIntake as any);
       
       // Mock scoring failure
       vi.mocked(scoreCase).mockRejectedValue(new Error('Scoring failed'));
@@ -346,7 +346,7 @@ describe.skip('Case Flow Integration Tests', () => {
         status: 'SCORED', // Can't transcribe a scored case
       };
       
-      vi.mocked(prisma.case.findUnique).mockResolvedValue(wrongStatusCase);
+      vi.mocked(prisma.case.findUnique).mockResolvedValue(wrongStatusCase as any);
 
       const request = new NextRequest('http://localhost:3000/api/cases/test-case-id/transcribe', {
         method: 'POST',

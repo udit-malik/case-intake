@@ -1,6 +1,7 @@
 import { CaseType } from "./types";
 
 export const SCORING_VERSION = "v3.2.0";
+export const EXTRACTION_RULES_VERSION = "admission-rules-v1";
 
 // deterministic LLM configs
 export const DETERMINISTIC = {
@@ -28,6 +29,8 @@ export const BASE = {
   PHYSICIAN_CAP: 12,
   CHIRO_POINTS: 3,
   CHIRO_CAP: 3,
+  PT_POINTS: 4,
+  PT_CAP: 8,
   PAIN_CAP: 10,
   WORK_CAP: 10,
 
@@ -66,6 +69,21 @@ export const BASE = {
 
   MIN_SCORE: 1,
   MAX_SCORE: 100,
+
+  // decision thresholds
+  ACCEPT_THRESHOLD: 70,
+  DECLINE_THRESHOLD: 40,
+  REVIEW_NUDGE_MIN: 30,
+  REVIEW_NUDGE_MAX: 39,
+
+  // time thresholds 
+  ER_WITHIN_HOURS: 24,
+  TREATMENT_72H_HOURS: 72,
+
+  RECENT_30D_DAYS: 30,
+  RECENT_180D_DAYS: 180,
+  OLD_INCIDENT_DAYS: 365,
+  RECENT_RELATIVE_DAYS: 14,
 };
 
 

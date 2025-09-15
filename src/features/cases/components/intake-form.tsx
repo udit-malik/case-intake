@@ -22,9 +22,24 @@ interface IntakeFormProps {
 
 const IntakeForm = forwardRef<{ saveDraft: () => Promise<void> }, IntakeFormProps>(
   ({ caseId, initialData, onSaveDraft, onDirtyChange }, ref) => {
+    // filter out DOB if set to current date (likely auto-defaulted)
+    const sanitizedInitialData = initialData ? {
+      ...initialData,
+      date_of_birth: (() => {
+        const today = new Date().toISOString().split('T')[0];
+        const dob = initialData.date_of_birth;
+        
+        if (!dob || dob.trim() === "" || dob === today) {
+          return "";
+        }
+        
+        return dob;
+      })()
+    } : undefined;
+
     const form = useSimpleForm<Intake>(
       IntakeStrictSchema,
-      initialData || {
+      sanitizedInitialData || {
         client_name: "",
         date_of_birth: "",
         phone_number: "",

@@ -1,5 +1,5 @@
 import { CaseType, CaseFeatures } from "./types";
-import { SCORING_VERSION, ENABLE_LLM_FEATURES } from "./constants";
+import { SCORING_VERSION, ENABLE_LLM_FEATURES, EXTRACTION_RULES_VERSION } from "./constants";
 import { 
   asBool, 
   asNum, 
@@ -29,7 +29,7 @@ async function extractFeaturesLLM(transcript: string, anchorDateISO: string): Pr
   // generate stable cache key
   const model = "gpt-4o-mini-2024-07-18";
   const seed = 42;
-  const cacheKey = `${SCORING_VERSION}|${model}|${seed}|${anchorDateISO}|${canonicalTranscript}`;
+  const cacheKey = `${SCORING_VERSION}|${EXTRACTION_RULES_VERSION}|${model}|${seed}|${anchorDateISO}|${canonicalTranscript}`;
   
   if (FEATURE_CACHE.has(cacheKey)) {
     return FEATURE_CACHE.get(cacheKey)!;
@@ -81,6 +81,22 @@ async function extractFeaturesLLM(transcript: string, anchorDateISO: string): Pr
 - airbag_deployed: boolean
 - uncertain: string[]
 - evidence: Record<string, { quote: string }>  // short quotes (10–50 chars), each keyed by a feature name
+- admission_attribution: "self" | "other" | "ambiguous"
+- admission_rationale: "direct_admission" | "negligent_act" | "third_party_claim" | "ambiguous"
+- admission_evidence: string | null  // short quote from caller
+- admission_rules_version: "admission-rules-v1"  // ALWAYS set to this exact value
+
+## Admission Rules
+True only if (attribution=self) AND (rationale in: direct_admission|negligent_act) AND (admission_evidence contains a short direct quote from the caller).
+Disqualify third-party claims and ambiguous phrasing.
+
+### Positive Examples:
+1. "I ran the red light and hit the other car" → attribution=self, rationale=direct_admission, evidence="ran the red light"
+2. "I was speeding and caused the accident" → attribution=self, rationale=negligent_act, evidence="was speeding and caused"
+
+### Negative Examples:
+1. "The other driver said it was my fault" → attribution=other, rationale=third_party_claim, evidence=null
+2. "It might have been my mistake" → attribution=ambiguous, rationale=ambiguous, evidence=null
 
 // New universal modifiers above are booleans; return true/false or null→false.
 
@@ -169,9 +185,23 @@ Return JSON only.`;
                   },
                   required: ["quote"]
                 }
+              },
+              admission_attribution: {
+                type: "string",
+                enum: ["self", "other", "ambiguous"]
+              },
+              admission_rationale: {
+                type: "string",
+                enum: ["direct_admission", "negligent_act", "third_party_claim", "ambiguous"]
+              },
+              admission_evidence: {
+                type: ["string", "null"]
+              },
+              admission_rules_version: {
+                type: "string"
               }
             },
-            required: ["case_type", "rear_ended", "no_warning_signs", "admission_of_fault", "police_report_present", "defendant_identified", "witness_present", "injury_sites", "peak_pain_0_10", "first_treatment_latency_hours", "providers", "missed_work_days", "neurologic_symptoms", "incident_date_iso", "relative_time_mentions", "client_auto_carrier", "client_health_carrier", "property_damage", "other_insurer_contacted", "is_pedestrian_or_bicyclist", "in_crosswalk", "helmet_worn", "is_rideshare", "is_commercial_vehicle", "hit_and_run", "dui_other_driver", "um_uim_applicable", "airbag_deployed", "uncertain", "evidence"]
+            required: ["case_type", "rear_ended", "no_warning_signs", "admission_of_fault", "police_report_present", "defendant_identified", "witness_present", "injury_sites", "peak_pain_0_10", "first_treatment_latency_hours", "providers", "missed_work_days", "neurologic_symptoms", "incident_date_iso", "relative_time_mentions", "client_auto_carrier", "client_health_carrier", "property_damage", "other_insurer_contacted", "is_pedestrian_or_bicyclist", "in_crosswalk", "helmet_worn", "is_rideshare", "is_commercial_vehicle", "hit_and_run", "dui_other_driver", "um_uim_applicable", "airbag_deployed", "uncertain", "evidence", "admission_attribution", "admission_rationale", "admission_evidence", "admission_rules_version"]
           },
           strict: true
         }
@@ -190,6 +220,12 @@ Return JSON only.`;
     } catch {
       return {};
     }
+
+    // compute gated admission of fault based on new admission rules
+    const admissionOfFaultGated = 
+      raw.admission_attribution === "self" &&
+      (raw.admission_rationale === "direct_admission" || raw.admission_rationale === "negligent_act") &&
+      raw.admission_evidence && raw.admission_evidence.trim().length > 0;
 
     // map to Partial<CaseFeatures> 
     const ct = asEnum(
@@ -224,7 +260,7 @@ Return JSON only.`;
       booleans: {
         rear_ended: asBool(raw.rear_ended),
         no_warning_signs: asBool(raw.no_warning_signs),
-        admission_of_fault: asBool(raw.admission_of_fault),
+        admission_of_fault: admissionOfFaultGated,
         police_report_present: asBool(raw.police_report_present),
         defendant_identified: asBool(raw.defendant_identified),
         witness_present: asBool(raw.witness_present),
@@ -273,6 +309,11 @@ Return JSON only.`;
         }
         return evOut;
       })(),
+      admission_meta: {
+        attribution: asEnum(raw.admission_attribution, ["self", "other", "ambiguous"] as const, "ambiguous"),
+        rationale: asEnum(raw.admission_rationale, ["direct_admission", "negligent_act", "third_party_claim", "ambiguous"] as const, "ambiguous"),
+        evidence: asStr(raw.admission_evidence) ?? "",
+      },
     };
 
     // store cache
@@ -354,12 +395,33 @@ function parsePainLevel(transcript: string | null | undefined): number | null {
   // generic pain fallback
   for (const m of t.matchAll(/\b(?:pain|hurt|ache)[^.\d]{0,40}?(\d{1,2})\b/g)) {
     const n = parseInt(m[1], 10);
-    if (n >= 0 && n <= 10) maxPain = Math.max(maxPain, n);
+    if (n >= 0 && n <= 10) {
+      // skip if n === 10 and nearby text contains "/10" or "out of 10" (denominator)
+      if (n === 10) {
+        const start = Math.max(0, m.index! - 20);
+        const end = Math.min(t.length, m.index! + m[0].length + 20);
+        const nearbyText = t.substring(start, end);
+        if (nearbyText.includes('/10') || nearbyText.includes('out of 10')) {
+          continue;
+        }
+      }
+      maxPain = Math.max(maxPain, n);
+    }
   }
   for (const m of t.matchAll(/\b(?:pain|hurt|ache)[^.]{0,40}?\b(one|two|three|four|five|six|seven|eight|nine|ten)\b/g)) {
     const map: Record<string, number> = {one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10};
     const n = map[m[1]];
-    if (n >= 0 && n <= 10) maxPain = Math.max(maxPain, n);
+    if (n >= 0 && n <= 10) {
+      if (n === 10) {
+        const start = Math.max(0, m.index! - 20);
+        const end = Math.min(t.length, m.index! + m[0].length + 20);
+        const nearbyText = t.substring(start, end);
+        if (nearbyText.includes('/10') || nearbyText.includes('out of 10')) {
+          continue;
+        }
+      }
+      maxPain = Math.max(maxPain, n);
+    }
   }
 
   return maxPain > 0 ? maxPain : null;
@@ -371,7 +433,7 @@ function countProviders(
 ): { physicians: number; chiropractors: number } {
   if (!transcript) return { physicians: 0, chiropractors: 0 };
 
-  const physicianPattern = /\b(doctor|dr\.|specialist)\b/gi;
+  const physicianPattern = /\b(doctor|dr\.|specialist|physical therapy|physical therapist|rehab|PT|urgent care|clinic|orthopedic|ortho)\b/gi;
   const chiroPattern = /\b(chiro|chiropractic|chiropractor)\b/gi;
 
   const physicians = (transcript.match(physicianPattern) || []).length;
@@ -502,7 +564,7 @@ function extractFeaturesHeuristic(transcript: string): CaseFeatures {
   const hasNeurologic = /(?:tingling|numbness|radiating|pins and needles)/i.test(t);
   
   // admission of fault
-  const hasAdmission = /\b(?:my fault|i caused|i (?:merged|cut.*off|ran.*red)|merged too quickly)\b/i.test(t);
+  const hasAdmission = /\b(?:my fault|i caused|i (?:ran a red|cut.*off|merged too (?:fast|quickly)))\b/i.test(t);
   
   // no warning signs
   const hasNoWarningSigns = /(?:no (?:wet )?floor sign|no warning sign|no caution sign)/i.test(t);
@@ -610,12 +672,12 @@ export async function buildFeatures({
         er: llm.providers?.er ?? heur.providers?.er ?? false,
       },
     booleans: {
-      rear_ended: llm.booleans?.rear_ended ?? heur.booleans.rear_ended,
+      rear_ended: (llm.booleans?.rear_ended === true) || (heur.booleans.rear_ended === true),
       no_warning_signs: llm.booleans?.no_warning_signs ?? heur.booleans.no_warning_signs,
-      admission_of_fault: llm.booleans?.admission_of_fault ?? heur.booleans.admission_of_fault,
-      police_report_present: llm.booleans?.police_report_present ?? heur.booleans.police_report_present,
-      defendant_identified: llm.booleans?.defendant_identified ?? heur.booleans.defendant_identified,
-      witness_present: llm.booleans?.witness_present ?? heur.booleans.witness_present,
+      admission_of_fault: (llm.booleans?.admission_of_fault === true) || (heur.booleans.admission_of_fault === true),
+      police_report_present: (llm.booleans?.police_report_present === true) || (heur.booleans.police_report_present === true),
+      defendant_identified: (llm.booleans?.defendant_identified === true) || (heur.booleans.defendant_identified === true),
+      witness_present: (llm.booleans?.witness_present === true) || (heur.booleans.witness_present === true),
       imaging_ordered: llm.booleans?.imaging_ordered ?? heur.booleans.imaging_ordered,
       imaging_completed: llm.booleans?.imaging_completed ?? heur.booleans.imaging_completed,
       neurologic_symptoms: llm.booleans?.neurologic_symptoms ?? heur.booleans.neurologic_symptoms,

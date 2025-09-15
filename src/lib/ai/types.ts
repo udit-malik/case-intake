@@ -56,6 +56,11 @@ export interface CaseFeatures {
   };
   uncertain: string[];
   evidence: Record<string, { quote: string } | undefined>;
+  admission_meta?: {
+    attribution: "self" | "other" | "ambiguous";
+    rationale: "direct_admission" | "negligent_act" | "third_party_claim" | "ambiguous";
+    evidence: string;
+  };
 }
 
 export interface ScoreBreakdownItem {

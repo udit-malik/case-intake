@@ -233,27 +233,34 @@ export default async function DashboardPage() {
                           {(caseItem as any).score &&
                             (caseItem as any).decision && (
                               <span
-                                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                                   (caseItem as any).decision === "ACCEPT"
-                                    ? "bg-green-50 text-green-800"
+                                    ? "bg-green-100/50 text-green-700"
                                     : (caseItem as any).decision === "DECLINE"
-                                      ? "bg-red-50 text-red-800"
-                                      : "bg-yellow-50 text-yellow-800"
+                                      ? "bg-red-100/50 text-red-700"
+                                      : "bg-amber-100/50 text-amber-700"
                                 }`}
                               >
-                                {(caseItem as any).score}/
-                                {(caseItem as any).decision}
+                                <span className="font-semibold">{(caseItem as any).score}</span>
+                                <span className="mx-1 text-slate-400">•</span>
+                                <span className="text-xs">{(caseItem as any).decision}</span>
                               </span>
                             )}
 
                           {/* status */}
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                               caseItem.status === "UPLOADED"
-                                ? "bg-yellow-50 text-yellow-800"
-                                : caseItem.status === "DECIDED"
-                                  ? "bg-green-50 text-green-800"
-                                  : "bg-blue-50 text-blue-800"
+                                ? "bg-amber-100/50 text-amber-700"
+                                : caseItem.status === "TRANSCRIBED"
+                                  ? "bg-blue-100/50 text-blue-700"
+                                  : caseItem.status === "EXTRACTED"
+                                    ? "bg-slate-100/50 text-slate-700"
+                                    : caseItem.status === "SCORED"
+                                      ? "bg-orange-100/50 text-orange-700"
+                                      : caseItem.status === "DECIDED"
+                                        ? "bg-green-100/50 text-green-700"
+                                        : "bg-slate-100/50 text-slate-700"
                             }`}
                           >
                             {caseItem.status}

@@ -102,7 +102,7 @@ IMPORTANT: If a value is not stated, return an empty string (or empty array) and
 
 For each field:
 - client_name: Full name of the client
-- date_of_birth: Birth date in YYYY-MM-DD format if possible
+- date_of_birth: Birth date in YYYY-MM-DD format ONLY if explicitly stated. If not mentioned, return empty string. DO NOT guess or use current date.
 - phone_number: Phone number (empty string if not provided)
 - email: Email address. Normalize speech patterns: if caller says 'sarah dot delgado 89 at outlook dot com', output sarah.delgado89@outlook.com
 - incident_date: Date of incident in YYYY-MM-DD format if possible
@@ -143,8 +143,18 @@ Always return valid JSON matching the exact schema.`,
       parsedData.email = normalizeEmailLikeString(parsedData.email);
     }
     
-    if (parsedData.date_of_birth) {
-      parsedData.date_of_birth = normalizeDate(parsedData.date_of_birth);
+    if (parsedData.date_of_birth && parsedData.date_of_birth.trim() !== "") {
+      const normalizedDob = normalizeDate(parsedData.date_of_birth);
+      // ensure DOB is not set to current date
+      const today = new Date().toISOString().split('T')[0];
+      if (normalizedDob === today) {
+        // if AI returned today's date, treat it as missing
+        parsedData.date_of_birth = "";
+      } else {
+        parsedData.date_of_birth = normalizedDob;
+      }
+    } else {
+      parsedData.date_of_birth = "";
     }
     
     if (parsedData.incident_date) {
@@ -166,7 +176,7 @@ Always return valid JSON matching the exact schema.`,
     // validate and structure response
     const intake = {
       client_name: parsedData.client_name || "",
-      date_of_birth: parsedData.date_of_birth || "",
+      date_of_birth: parsedData.date_of_birth || "", // never auto-default to current date
       phone_number: parsedData.phone_number || "",
       email: parsedData.email || "",
       incident_date: parsedData.incident_date || "",

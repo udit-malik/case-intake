@@ -112,8 +112,11 @@ export async function scoreCase(input: {
 
   if (features.booleans.admission_of_fault) {
     score += W.ADMISSION_OF_FAULT;
-    reasons.push(`- Admission of fault`);
-    breakdown.push({ factor: "admission_of_fault", delta: W.ADMISSION_OF_FAULT, reason: "Admission of fault" });
+    const evidenceSnippet = features.evidence.admission_of_fault?.quote;
+    const reasonText = evidenceSnippet ? `- Admission of fault (${evidenceSnippet})` : `- Admission of fault`;
+    const breakdownText = evidenceSnippet ? `Admission of fault (${evidenceSnippet})` : `Admission of fault`;
+    reasons.push(reasonText);
+    breakdown.push({ factor: "admission_of_fault", delta: W.ADMISSION_OF_FAULT, reason: breakdownText });
   }
 
   if (features.booleans.police_report_present) {
@@ -138,7 +141,7 @@ export async function scoreCase(input: {
 
   const erWithin24 = (features.providers?.er === true || hasERSameDay(t)) && 
     features.numbers.first_treatment_latency_hours !== null && 
-    features.numbers.first_treatment_latency_hours <= 24;
+    features.numbers.first_treatment_latency_hours <= W.ER_WITHIN_HOURS;
 
   if (erWithin24) {
     score += W.ER_SAME_DAY;
@@ -159,9 +162,7 @@ export async function scoreCase(input: {
   const chiroPoints = Math.min(chiroCount * W.CHIRO_POINTS, W.CHIRO_CAP);
   score += chiroPoints;
 
-  const PT_POINTS = 4;
-  const PT_CAP = 8;
-  const ptPoints = Math.min(ptCount * PT_POINTS, PT_CAP);
+  const ptPoints = Math.min(ptCount * W.PT_POINTS, W.PT_CAP);
   score += ptPoints;
 
   if (physicianPoints > 0 || chiroPoints > 0 || ptPoints > 0) {
@@ -211,11 +212,11 @@ export async function scoreCase(input: {
   trace.treatmentLatency = latency;
 
   if (latency !== null) {
-    if (latency <= 24) {
+    if (latency <= W.ER_WITHIN_HOURS) {
       score += W.PROMPT_TREATMENT;
       reasons.push(`+ Prompt treatment`);
       breakdown.push({ factor: "prompt_treatment", delta: W.PROMPT_TREATMENT, reason: "Prompt treatment" });
-    } else if (latency <= 72) {
+    } else if (latency <= W.TREATMENT_72H_HOURS) {
       score += W.TREATMENT_72H;
       reasons.push(`+ Treatment within 72h`);
       breakdown.push({ factor: "treatment_72h", delta: W.TREATMENT_72H, reason: "Treatment within 72h" });
@@ -348,16 +349,16 @@ export async function scoreCase(input: {
   trace.daysSinceIncident = daysSinceIncident;
 
   if (daysSinceIncident !== null) {
-    if (daysSinceIncident <= 30) {
+    if (daysSinceIncident <= W.RECENT_30D_DAYS) {
       score += W.RECENT_30D;
       reasons.push(`+ Recent incident (<30d)`);
       breakdown.push({ factor: "recent_30d", delta: W.RECENT_30D, reason: "Recent incident (<30d)" });
       trace.recentIncident = true;
-    } else if (daysSinceIncident <= 180) {
+    } else if (daysSinceIncident <= W.RECENT_180D_DAYS) {
       score += W.RECENT_180D;
       reasons.push(`+ Recent incident (<180d)`);
       breakdown.push({ factor: "recent_180d", delta: W.RECENT_180D, reason: "Recent incident (<180d)" });
-    } else if (daysSinceIncident > 365) {
+    } else if (daysSinceIncident > W.OLD_INCIDENT_DAYS) {
       score += W.OLD_INCIDENT;
       reasons.push(`- Old incident (>1yr)`);
       breakdown.push({ factor: "old_incident", delta: W.OLD_INCIDENT, reason: "Old incident (>1yr)" });
@@ -380,8 +381,8 @@ export async function scoreCase(input: {
   if (daysSinceIncident === null) {
     if (matchesPattern(t, /\b(last Friday|two Fridays ago|last week)\b/i)) {
       score += W.RECENT_RELATIVE;
-      reasons.push(`+ Recent incident (≤14d)`);
-      breakdown.push({ factor: "recent_relative", delta: W.RECENT_RELATIVE, reason: "Recent incident (≤14d)" });
+      reasons.push(`+ Recent incident (≤${W.RECENT_RELATIVE_DAYS}d)`);
+      breakdown.push({ factor: "recent_relative", delta: W.RECENT_RELATIVE, reason: `Recent incident (≤${W.RECENT_RELATIVE_DAYS}d)` });
       trace.recentIncident = true;
     }
   }
@@ -392,9 +393,9 @@ export async function scoreCase(input: {
   score = Math.max(W.MIN_SCORE, Math.min(W.MAX_SCORE, score));
 
   let decision: "ACCEPT" | "REVIEW" | "DECLINE";
-  if (score >= 70) {
+  if (score >= W.ACCEPT_THRESHOLD) {
     decision = "ACCEPT";
-  } else if (score < 40) {
+  } else if (score < W.DECLINE_THRESHOLD) {
     decision = "DECLINE";
   } else {
     decision = "REVIEW";
@@ -402,7 +403,7 @@ export async function scoreCase(input: {
 
   // deterministic nudge: 
   // if result is DECLINE with 30–39 and missing deterministic fields, bump to REVIEW
-  if (decision === "DECLINE" && score >= 30 && score < 40) {
+  if (decision === "DECLINE" && score >= W.REVIEW_NUDGE_MIN && score < W.REVIEW_NUDGE_MAX) {
     const hasMissingDob = !intake.date_of_birth || intake.date_of_birth.trim() === "";
     const hasMissingIncidentDate = !effectiveIncidentDate || effectiveIncidentDate.trim() === "";
     const hasMissingEstimatedValue = !intake.estimated_value || intake.estimated_value === 0;
